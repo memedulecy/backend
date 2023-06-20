@@ -14,9 +14,10 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DBConfigProvider } from 'SRC/database/dbConfig.provider';
+import { EnvService } from 'SRC/env/env.service';
 
 @Module({
-    imports: [EnvModule, DatabaseModule, TypeOrmModule.forRoot(new DBConfigProvider().createTypeOrmOptions())],
+    imports: [EnvModule, TypeOrmModule.forRoot(new DBConfigProvider().createTypeOrmOptions())],
     controllers: [AppController],
     providers: [
         AppService,
