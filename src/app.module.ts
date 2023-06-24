@@ -16,9 +16,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DBConfigProvider } from 'SRC/database/dbConfig.provider';
 import { EnvService } from 'SRC/env/env.service';
 import { FileModule } from './file/file.module';
+import { MemeModule } from './meme/meme.module';
 
 @Module({
-    imports: [EnvModule, TypeOrmModule.forRoot(new DBConfigProvider().createTypeOrmOptions()), FileModule],
+    imports: [EnvModule, TypeOrmModule.forRoot(new DBConfigProvider().createTypeOrmOptions()), FileModule, MemeModule],
     controllers: [AppController],
     providers: [
         AppService,
