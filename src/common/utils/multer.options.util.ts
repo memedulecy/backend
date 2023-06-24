@@ -21,8 +21,6 @@ export const multerOptions = (envService: EnvService): MulterOptions => {
             key(_req, file, done) {
                 const ext = path.extname(file.originalname);
                 const basename = path.basename(file.originalname, ext);
-                console.log('ext', ext);
-                console.log('basename', basename);
                 done(null, `${basename}_${Date.now()}${ext}`);
             },
         }),
