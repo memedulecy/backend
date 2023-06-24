@@ -11,10 +11,8 @@ import { AppController } from './app.controller';
 import { EnvModule } from './env/env.module';
 // service
 import { AppService } from './app.service';
-import { DatabaseModule } from './database/database.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DBConfigProvider } from 'DATABASE/dbConfig.provider';
-import { EnvService } from 'ENV/env.service';
 import { FileModule } from './file/file.module';
 import { MemeModule } from './meme/meme.module';
 
