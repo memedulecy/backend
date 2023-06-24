@@ -1,7 +1,7 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-import { Env } from 'SRC/env/dataTypes/types/env.type';
-import { EnvService } from 'SRC/env/env.service';
+import { Env } from 'ENV/dataTypes/types/env.type';
+import { EnvService } from 'ENV/env.service';
 import multerS3 from 'multer-s3';
 import path from 'path';
 

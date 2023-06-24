@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
-import { EnvService } from 'SRC/env/env.service';
-import { Env } from 'SRC/env/dataTypes/types/env.type';
+import { EnvService } from 'ENV/env.service';
+import { Env } from 'ENV/dataTypes/types/env.type';
+import { entities } from './const/entities.const';
 
 @Injectable()
 export class DBConfigProvider implements TypeOrmOptionsFactory {
@@ -23,6 +24,7 @@ export class DBConfigProvider implements TypeOrmOptionsFactory {
             database: this.database,
             synchronize: true,
             logging: true,
+            entities,
         };
     }
 }
