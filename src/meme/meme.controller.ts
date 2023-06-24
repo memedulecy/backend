@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { MemeService } from './meme.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { IntegrateException } from 'EXCEPTION/integrateException';
@@ -11,6 +11,7 @@ export class MemeController {
     constructor(private readonly memeService: MemeService) {}
 
     @Post('')
+    @HttpCode(HttpStatus.CREATED)
     @UseInterceptors(FileInterceptor('img'))
     async create(@UploadedFile() img: Express.MulterS3.File, @Body() body: { message: string }): Promise<MemeModel> {
         const imgUrl = this.uploadImg(img);
@@ -20,13 +21,14 @@ export class MemeController {
         return this.memeService.create(imgUrl, message, creator);
     }
 
+    @Get('/:memeId')
+    @HttpCode(HttpStatus.OK)
+    async findDetail(@Param('memeId') memeId: string): Promise<MemeModel> {
+        return await this.memeService.findDetail(memeId);
+    }
+
     private uploadImg = (img: Express.MulterS3.File): string => {
         if (!img) throw new IntegrateException(ErrCode.BAD_REQUEST, ErrMsg.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         return img.location;
     };
-
-    @Get('/:memeId')
-    async findDetail(@Param('memeId') memeId: string): Promise<MemeModel> {
-        return await this.memeService.findDetail(memeId);
-    }
 }
