@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { EnvService } from 'SRC/env/env.service';
-import { Env } from 'SRC/env/dataTypes/types/env.type';
+import { EnvService } from 'ENV/env.service';
+import { Env } from 'ENV/dataTypes/types/env.type';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { cors: true });
