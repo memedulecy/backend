@@ -9,9 +9,9 @@ import { ErrMsg } from 'EXCEPTION/errMsg';
 export class MemeService {
     constructor(private readonly memeRepository: MemeRepository) {}
 
-    public create = async (imgUrl: string, message: string, creator: string): Promise<MemeModel> => {
+    public create = async (imgUrl: string, message: string, lat: number, long: number, creator: string): Promise<MemeModel> => {
         const newMeme: Partial<MemeModel> = { imgUrl, message, creator, updater: creator };
-        return await this.memeRepository.create(newMeme);
+        return await this.memeRepository.create(newMeme, lat, long);
     };
 
     public findDetail = async (memeId: string): Promise<MemeModel> => {

@@ -13,12 +13,17 @@ export class MemeController {
     @Post('')
     @HttpCode(HttpStatus.CREATED)
     @UseInterceptors(FileInterceptor('img'))
-    async create(@UploadedFile() img: Express.MulterS3.File, @Body() body: { message: string }): Promise<MemeModel> {
+    async create(
+        @UploadedFile() img: Express.MulterS3.File,
+        @Body() body: { message: string; lat: string; long: string },
+    ): Promise<MemeModel> {
         const imgUrl = this.uploadImg(img);
         const message = body.message;
+        const lat = Number(body.lat);
+        const long = Number(body.long);
         const creator = 'DOHEE';
 
-        return this.memeService.create(imgUrl, message, creator);
+        return this.memeService.create(imgUrl, message, lat, long, creator);
     }
 
     @Get('/:memeId')
