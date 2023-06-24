@@ -9,4 +9,4 @@ export const Env = {
     AWS_SECRET_ACCESS_KEY: 'AWS_SECRET_ACCESS_KEY',
 } as const;
 
-export type Env = keyof typeof Env;
+export type Env = (typeof Env)[keyof typeof Env];

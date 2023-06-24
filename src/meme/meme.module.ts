@@ -16,5 +16,6 @@ import { MemeRepository } from './repository/meme.repository';
     ],
     providers: [MemeService, MemeRepository],
     controllers: [MemeController],
+    exports: [MemeService],
 })
 export class MemeModule {}
