@@ -1,15 +1,6 @@
 import { Logger } from '@nestjs/common';
-import {
-    ConnectedSocket,
-    MessageBody,
-    OnGatewayConnection,
-    OnGatewayDisconnect,
-    OnGatewayInit,
-    SubscribeMessage,
-    WebSocketGateway,
-    WebSocketServer,
-} from '@nestjs/websockets';
-import { Namespace, Socket, Server } from 'socket.io';
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Socket, Server } from 'socket.io';
 
 @WebSocketGateway(3000, { transports: ['websocket'], cors: true })
 export class EventsGateway {
