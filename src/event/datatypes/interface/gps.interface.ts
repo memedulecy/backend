@@ -1,5 +1,3 @@
-import { ObjectId } from 'mongodb';
-
 export interface GpsBody {
     lat: number;
     long: number;
@@ -8,5 +6,5 @@ export interface GpsBody {
 
 export interface GpsData {
     location: [number, number];
-    userId?: ObjectId;
+    userId?: string;
 }
