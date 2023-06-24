@@ -28,7 +28,7 @@ export class MemeController {
     }
 
     private uploadImg = (img: Express.MulterS3.File): string => {
-        if (!img) throw new IntegrateException(ErrCode.BAD_REQUEST, ErrMsg.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+        if (!img) throw new IntegrateException(ErrCode.INVALID_IMG, ErrMsg.INVALID_IMG, HttpStatus.BAD_REQUEST);
         return img.location;
     };
 }
