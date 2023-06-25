@@ -32,6 +32,7 @@ export class EventsGateway {
             const decoded: { userId: string } = verify(gps.token, process.env.JWT_KEY);
             data.userId = decoded.userId;
         }
+        this.logger.log(`💜 ${socket.id} gps 정보 전송 [ lat: ${gps.lat} / long: ${gps.long} ] 💜`);
         socketMap.set(socket.id, data);
         await this.resendMemes();
     }
