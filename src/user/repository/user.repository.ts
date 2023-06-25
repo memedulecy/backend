@@ -14,6 +14,12 @@ export class UserRepository {
         return await this.userRepository.findOne({ where: { email } });
     };
 
+    public updateProfile = async (user: UserModel, nickname: string, profileImg: string) => {
+        if (nickname) user.nickname = nickname;
+        if (profileImg) user.profileImg = profileImg;
+        return await this.userRepository.save(user);
+    };
+
     public updateLastLoginTs = async (user: UserModel) => {
         user.lastLoginTs = Date.now();
         return await this.userRepository.save(user);
