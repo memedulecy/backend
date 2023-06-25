@@ -1,5 +1,4 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { LocationModel } from 'MEME/entity/location.model';
 import { MemeModel } from 'MEME/entity/meme.model';
 import { ObjectId } from 'mongodb';
 import { FindOptions, MongoRepository } from 'typeorm';
@@ -7,9 +6,8 @@ import { FindOptions, MongoRepository } from 'typeorm';
 export class MemeRepository {
     constructor(@InjectRepository(MemeModel) private readonly memeRepository: MongoRepository<MemeModel>) {}
 
-    public create = async (newMeme: Partial<MemeModel>, lat: number, long: number): Promise<MemeModel> => {
+    public create = async (newMeme: Partial<MemeModel>): Promise<MemeModel> => {
         const meme = this.memeRepository.create(newMeme);
-        meme.location = new LocationModel(lat, long);
         return await this.memeRepository.save(meme);
     };
 
