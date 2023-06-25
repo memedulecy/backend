@@ -7,14 +7,12 @@ import { entities } from './const/entities.const';
 @Injectable()
 export class DBConfigProvider implements TypeOrmOptionsFactory {
     private readonly host: string;
-    private readonly port: number;
     private readonly database: string;
     private readonly username: string;
     private readonly password: string;
 
     constructor(private envService = new EnvService()) {
         this.host = envService.get<string>(Env.DB_HOST);
-        this.port = envService.get<number>(Env.DB_PORT);
         this.database = envService.get<string>(Env.DB_DATABASE);
         this.username = envService.get<string>(Env.DB_USERNAME);
         this.password = envService.get<string>(Env.DB_PASSWORD);
@@ -23,11 +21,7 @@ export class DBConfigProvider implements TypeOrmOptionsFactory {
     createTypeOrmOptions(): TypeOrmModuleOptions {
         return {
             type: 'mongodb',
-            host: this.host,
-            port: this.port,
-            database: this.database,
-            username: this.username,
-            password: this.password,
+            url: `mongodb+srv://${this.username}:${this.password}@${this.host}/${this.database}?retryWrites=true&w=majority`,
             synchronize: true,
             logging: true,
             entities,
