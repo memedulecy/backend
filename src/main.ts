@@ -6,6 +6,11 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { cors: true });
+    app.enableCors({
+        origin: true,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        credentials: true,
+    });
     app.useWebSocketAdapter(new IoAdapter(app));
     const envService = new EnvService();
     const port = +envService.get<string>(Env.PORT) || 3000;

@@ -22,9 +22,8 @@ export class MemeController {
     ): Promise<MemeModel> {
         const imgUrl = this.uploadImg(img);
         const message = body.message;
-        const creator = user.userId.toString();
 
-        return this.memeService.create(imgUrl, message, creator);
+        return this.memeService.create(imgUrl, message, user);
     }
 
     @Get('/:memeId')
