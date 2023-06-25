@@ -11,5 +11,6 @@ import { EnvModule } from 'ENV/env.module';
     imports: [TypeOrmModule.forFeature([UserModel]), EnvModule, MemeModule],
     providers: [UserService, UserRepository],
     controllers: [UserController],
+    exports: [UserRepository],
 })
 export class UserModule {}

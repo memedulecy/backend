@@ -1,7 +1,7 @@
-import { Controller, Get, HttpCode, HttpStatus, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Put, Query } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UserType } from './dataTypes/type/user.type';
 import { UserModel } from './entity/user.model';
+import { User } from 'COMMON/decorators/user.decorator';
 
 @Controller('users')
 export class UserController {
@@ -15,16 +15,15 @@ export class UserController {
 
     @Get('/')
     @HttpCode(HttpStatus.OK)
-    async getProfile(): Promise<UserModel> {
-        return {} as UserModel;
+    async getProfile(@User() user: UserModel): Promise<UserModel> {
+        return user;
     }
 
     @Put('/')
     @HttpCode(HttpStatus.OK)
-    async updateProfile(): Promise<UserModel> {
-        const user = {} as UserModel;
-        const nickname = 'dohee';
-        const imgUrl = '';
+    async updateProfile(@User() user: UserModel, @Body() body: { nickname?: string; imgUrl?: string }): Promise<UserModel> {
+        const nickname = body.nickname;
+        const imgUrl = body.imgUrl;
         return await this.userService.updateProfile(user, nickname, imgUrl);
     }
 }

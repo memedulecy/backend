@@ -23,7 +23,7 @@ export class UserService {
         const email = await this.getUserEmail(accessToken);
         // 사용자 찾고 있으면 token 발행, 없으면 create하고 token 발생
         const user = await this.createIfNeed(email);
-        const token = sign({ userId: user.userId }, this.envService.get<string>(Env.JWT_KEY));
+        const token = sign({ userId: user.userId.toString() }, this.envService.get<string>(Env.JWT_KEY));
         return { token };
     };
 

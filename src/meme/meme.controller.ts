@@ -5,6 +5,8 @@ import { IntegrateException } from 'EXCEPTION/integrateException';
 import { ErrCode } from 'EXCEPTION/errCode';
 import { ErrMsg } from 'EXCEPTION/errMsg';
 import { MemeModel } from './entity/meme.model';
+import { User } from 'COMMON/decorators/user.decorator';
+import { UserModel } from 'SRC/user/entity/user.model';
 
 @Controller('memes')
 export class MemeController {
@@ -13,10 +15,14 @@ export class MemeController {
     @Post('')
     @HttpCode(HttpStatus.CREATED)
     @UseInterceptors(FileInterceptor('img'))
-    async create(@UploadedFile() img: Express.MulterS3.File, @Body() body: { message: string }): Promise<MemeModel> {
+    async create(
+        @UploadedFile() img: Express.MulterS3.File,
+        @Body() body: { message: string },
+        @User() user: UserModel,
+    ): Promise<MemeModel> {
         const imgUrl = this.uploadImg(img);
         const message = body.message;
-        const creator = 'DOHEE';
+        const creator = user.userId.toString();
 
         return this.memeService.create(imgUrl, message, creator);
     }
