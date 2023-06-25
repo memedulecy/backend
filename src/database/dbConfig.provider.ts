@@ -26,6 +26,8 @@ export class DBConfigProvider implements TypeOrmOptionsFactory {
             host: this.host,
             port: this.port,
             database: this.database,
+            username: this.username,
+            password: this.password,
             synchronize: true,
             logging: true,
             entities,
