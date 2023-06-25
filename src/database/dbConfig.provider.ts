@@ -9,11 +9,15 @@ export class DBConfigProvider implements TypeOrmOptionsFactory {
     private readonly host: string;
     private readonly port: number;
     private readonly database: string;
+    private readonly username: string;
+    private readonly password: string;
 
     constructor(private envService = new EnvService()) {
         this.host = envService.get<string>(Env.DB_HOST);
         this.port = envService.get<number>(Env.DB_PORT);
         this.database = envService.get<string>(Env.DB_DATABASE);
+        this.username = envService.get<string>(Env.DB_USERNAME);
+        this.password = envService.get<string>(Env.DB_PASSWORD);
     }
 
     createTypeOrmOptions(): TypeOrmModuleOptions {
