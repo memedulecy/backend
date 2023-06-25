@@ -7,6 +7,7 @@ import { ErrMsg } from 'EXCEPTION/errMsg';
 import { FindOptions } from 'typeorm';
 import { before30minutes } from 'COMMON/const/time.const';
 import { UserModel } from 'SRC/user/entity/user.model';
+import { Sticker } from './dataTypes/interface/sticker.interface';
 
 @Injectable()
 export class MemeService {
@@ -35,5 +36,10 @@ export class MemeService {
     public findByUserIds = async (userIds: string[]): Promise<MemeModel[]> => {
         const filter = { creator: { $in: userIds }, createdTs: { $gt: before30minutes } } as FindOptions<MemeModel>;
         return await this.memeRepository.findByFilter(filter);
+    };
+
+    public putStickers = async (memeId: string, stickers: Sticker[]) => {
+        const meme = await this.findDetail(memeId);
+        return await this.memeRepository.putStickers(meme, stickers);
     };
 }

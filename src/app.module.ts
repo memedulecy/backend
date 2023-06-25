@@ -18,6 +18,7 @@ import { EventModule } from './event/event.module';
 import { UserModule } from './user/user.module';
 import { JwtMiddleware } from 'COMMON/middlewares/jwt.middleware';
 import { UserController } from './user/user.controller';
+import { MemeController } from 'MEME/meme.controller';
 
 @Module({
     imports: [EnvModule, TypeOrmModule.forRoot(new DBConfigProvider().createTypeOrmOptions()), MemeModule, EventModule, UserModule],
@@ -32,6 +33,6 @@ export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(HttpLoggerMiddleware).forRoutes('*');
         consumer.apply(JwtMiddleware).exclude({ path: '/users/log-in/kakao', method: RequestMethod.POST }).forRoutes(UserController);
-        consumer.apply(JwtMiddleware).forRoutes({ path: '/memes', method: RequestMethod.POST });
+        consumer.apply(JwtMiddleware).exclude({ path: '/memes/:memeID', method: RequestMethod.GET }).forRoutes(MemeController);
     }
 }

@@ -7,8 +7,6 @@ import { MemeService } from 'MEME/meme.service';
 import getDistance from 'gps-distance';
 import { socketMap } from 'COMMON/const/socketMap.const';
 import { verify } from 'jsonwebtoken';
-import { Env } from 'ENV/dataTypes/types/env.type';
-import { EnvService } from 'ENV/env.service';
 
 @WebSocketGateway(3000, { transports: ['websocket'], cors: true })
 export class EventsGateway {
@@ -53,7 +51,7 @@ export class EventsGateway {
                     .filter(socketData => {
                         if (!socketData[VALUE_IDX].userId || targetData[VALUE_IDX].userId === socketData[VALUE_IDX].userId) return false;
                         const [long2, lat2] = socketData[VALUE_IDX].location;
-                        return getDistance(lat1, long1, lat2, long2) <= 1;
+                        return getDistance(lat1, long1, lat2, long2) <= 50;
                     })
                     .map(v => v[VALUE_IDX].userId);
                 const memes = await this.memeService.findByUserIds(userIds);

@@ -22,4 +22,7 @@ export class MemeModel extends BaseEntity {
 
     @Column({ nullable: false, comment: '작성자 프로필 사진' })
     profileImg: string;
+
+    @Column({ nullable: false, comment: '스티커 목록' })
+    stickers: { x: number; y: number; type: string }[] = [];
 }
