@@ -4,7 +4,7 @@ import { MemeModel } from './entity/meme.model';
 import { IntegrateException } from 'EXCEPTION/integrateException';
 import { ErrCode } from 'EXCEPTION/errCode';
 import { ErrMsg } from 'EXCEPTION/errMsg';
-import { FindOptions, In, MoreThan } from 'typeorm';
+import { FindOptions } from 'typeorm';
 import { before30minutes } from 'COMMON/const/time.const';
 
 @Injectable()
