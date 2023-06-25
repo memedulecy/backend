@@ -19,6 +19,8 @@ export class MemeService {
     public findDetail = async (memeId: string): Promise<MemeModel> => {
         const meme = await this.memeRepository.findOneById(memeId);
         if (!meme) throw new IntegrateException(ErrCode.NOT_FOUND_MEME, ErrMsg.NOT_FOUND_MEME, HttpStatus.NOT_FOUND);
+        if (!meme.imgUrl) meme.imgUrl = null;
+        if (!meme.message) meme.message = null;
         return meme;
     };
 

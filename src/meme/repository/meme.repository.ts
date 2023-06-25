@@ -18,4 +18,10 @@ export class MemeRepository {
     public findByFilter = async (filter: FindOptions<MemeModel>) => {
         return await this.memeRepository.find({ where: filter, order: { createdTs: 'DESC' } });
     };
+
+    public updateUserProfile = async (meme: MemeModel, nickname: string, profileImg: string) => {
+        meme.nickname = nickname;
+        meme.profileImg = profileImg;
+        return await this.memeRepository.save(meme);
+    };
 }
