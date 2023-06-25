@@ -54,6 +54,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     private nestErrRes(res: Response, err: any): void {
-        res.status(err.getStatus()).json({ errMsg: err.response.message, errCode: ErrCode.BAD_REQUEST });
+        res.status(HttpStatus.BAD_REQUEST).json({ errMsg: err.response.message, errCode: ErrCode.BAD_REQUEST });
     }
 }

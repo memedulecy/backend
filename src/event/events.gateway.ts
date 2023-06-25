@@ -6,6 +6,9 @@ import { GpsBody, GpsData } from './datatypes/interface/gps.interface';
 import { MemeService } from 'MEME/meme.service';
 import getDistance from 'gps-distance';
 import { socketMap } from 'COMMON/const/socketMap.const';
+import { verify } from 'jsonwebtoken';
+import { Env } from 'ENV/dataTypes/types/env.type';
+import { EnvService } from 'ENV/env.service';
 
 @WebSocketGateway(3000, { transports: ['websocket'], cors: true })
 export class EventsGateway {
@@ -27,7 +30,10 @@ export class EventsGateway {
     @SubscribeMessage(EventType.SEND_GPS)
     async handleGPSMessage(@ConnectedSocket() socket: Socket, @MessageBody() gps: GpsBody) {
         const data: GpsData = { location: [gps.long, gps.lat] };
-        if (gps.token) data.userId = '649673d0a81c659607d29cd1';
+        if (gps.token) {
+            const decoded: { userId: string } = verify(gps.token, process.env.JWT_KEY);
+            data.userId = decoded.userId;
+        }
         socketMap.set(socket.id, data);
         await this.resendMemes();
     }
