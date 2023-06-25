@@ -20,9 +20,9 @@ export class UserService {
 
     public login = async (code: string) => {
         const accessToken = await this.getToken(code);
-        const email = await this.getUserEmail(accessToken);
+        const { email, nickname } = await this.getUserData(accessToken);
         // 사용자 찾고 있으면 token 발행, 없으면 create하고 token 발생
-        const user = await this.createIfNeed(email);
+        const user = await this.createIfNeed(email, nickname);
         const token = sign({ userId: user.userId.toString() }, this.envService.get<string>(Env.JWT_KEY));
         return { token };
     };
@@ -37,10 +37,9 @@ export class UserService {
         return updatedUser;
     };
 
-    private createIfNeed = async (email: string) => {
+    private createIfNeed = async (email: string, nickname: string) => {
         let user = await this.userRepository.findOneByEmail(email);
         if (!user) {
-            const nickname = '임시 닉네임';
             const type = UserType.KAKAO;
             user = await this.userRepository.create({ email, type, nickname });
         } else {
@@ -63,9 +62,11 @@ export class UserService {
         return tokenRequest.data.access_token;
     };
 
-    private getUserEmail = async (token: string) => {
+    private getUserData = async (token: string) => {
         const url = this.envService.get<string>(Env.KAKAO_DATA_URL);
         const userData = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
-        return userData.data.kakao_account.email;
+        const email = userData.data.kakao_account.email;
+        const nickname = userData.data.properties.nickname;
+        return { email, nickname };
     };
 }
