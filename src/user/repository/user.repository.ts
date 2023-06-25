@@ -1,6 +1,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository } from 'typeorm';
 import { UserModel } from '../entity/user.model';
+import { ObjectId } from 'mongodb';
 
 export class UserRepository {
     constructor(@InjectRepository(UserModel) private readonly userRepository: MongoRepository<UserModel>) {}
@@ -8,6 +9,10 @@ export class UserRepository {
     public create = async (newUser: Partial<UserModel>): Promise<UserModel> => {
         const user = this.userRepository.create(newUser);
         return await this.userRepository.save(user);
+    };
+
+    public findOneById = async (userId: string): Promise<UserModel> => {
+        return await this.userRepository.findOne({ where: { _id: new ObjectId(userId) } });
     };
 
     public findOneByEmail = async (email: string): Promise<UserModel> => {
