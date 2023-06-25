@@ -1,7 +1,8 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Put, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserModel } from './entity/user.model';
 import { User } from 'COMMON/decorators/user.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UserController {
@@ -21,9 +22,14 @@ export class UserController {
 
     @Put('/')
     @HttpCode(HttpStatus.OK)
-    async updateProfile(@User() user: UserModel, @Body() body: { nickname?: string; imgUrl?: string }): Promise<UserModel> {
+    @UseInterceptors(FileInterceptor('img'))
+    async updateProfile(
+        @UploadedFile() img: Express.MulterS3.File,
+        @User() user: UserModel,
+        @Body() body: { nickname?: string; imgUrl?: string },
+    ): Promise<UserModel> {
         const nickname = body.nickname;
-        const imgUrl = body.imgUrl;
+        const imgUrl = body.imgUrl || img?.location || '';
         return await this.userService.updateProfile(user, nickname, imgUrl);
     }
 }
