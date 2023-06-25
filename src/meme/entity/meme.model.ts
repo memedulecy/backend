@@ -1,7 +1,6 @@
 import { BaseEntity } from 'DATABASE/entity/base.entity';
 import { IsOptional, IsString } from 'class-validator';
 import { Column, Entity, ObjectId, ObjectIdColumn } from 'typeorm';
-import { LocationModel } from './location.model';
 
 @Entity('meme_model')
 export class MemeModel extends BaseEntity {
@@ -18,6 +17,9 @@ export class MemeModel extends BaseEntity {
     @Column({ nullable: false, comment: '메세지' })
     message: string = '';
 
-    @Column(() => LocationModel)
-    location: LocationModel;
+    @Column({ nullable: false, comment: '작성자 닉네임' })
+    nickname: string;
+
+    @Column({ nullable: false, comment: '작성자 프로필 사진' })
+    profileImg: string;
 }
