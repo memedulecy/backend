@@ -18,10 +18,23 @@ export class DBConfigProvider implements TypeOrmOptionsFactory {
         this.password = envService.get<string>(Env.DB_PASSWORD);
     }
 
+    // createTypeOrmOptions(): TypeOrmModuleOptions {
+    //     return {
+    //         type: 'mongodb',
+    //         url: `mongodb+srv://${this.username}:${this.password}@${this.host}/${this.database}?retryWrites=true&w=majority`,
+    //         synchronize: true,
+    //         logging: true,
+    //         entities,
+    //     };
+    // }
+
     createTypeOrmOptions(): TypeOrmModuleOptions {
         return {
             type: 'mongodb',
-            url: `mongodb+srv://${this.username}:${this.password}@${this.host}/${this.database}?retryWrites=true&w=majority`,
+            // url: `mongodb+srv://${this.username}:${this.password}@${this.host}/${this.database}?retryWrites=true&w=majority`,
+            host: this.host,
+            port: 27017,
+            database: this.database,
             synchronize: true,
             logging: true,
             entities,

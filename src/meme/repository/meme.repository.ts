@@ -1,4 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
+import { Sticker } from 'MEME/dataTypes/interface/sticker.interface';
 import { MemeModel } from 'MEME/entity/meme.model';
 import { ObjectId } from 'mongodb';
 import { FindOptions, MongoRepository } from 'typeorm';
@@ -17,6 +18,11 @@ export class MemeRepository {
 
     public findByFilter = async (filter: FindOptions<MemeModel>) => {
         return await this.memeRepository.find({ where: filter, order: { createdTs: 'DESC' } });
+    };
+
+    public putStickers = async (meme: MemeModel, stickers: Sticker[]) => {
+        meme.stickers.push(...stickers);
+        return await this.memeRepository.save(meme);
     };
 
     public updateUserProfile = async (meme: MemeModel, nickname: string, profileImg: string) => {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { MemeService } from './meme.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { IntegrateException } from 'EXCEPTION/integrateException';
@@ -7,6 +7,7 @@ import { ErrMsg } from 'EXCEPTION/errMsg';
 import { MemeModel } from './entity/meme.model';
 import { User } from 'COMMON/decorators/user.decorator';
 import { UserModel } from 'SRC/user/entity/user.model';
+import { Sticker } from './dataTypes/interface/sticker.interface';
 
 @Controller('memes')
 export class MemeController {
@@ -30,6 +31,12 @@ export class MemeController {
     @HttpCode(HttpStatus.OK)
     async findDetail(@Param('memeId') memeId: string): Promise<MemeModel> {
         return await this.memeService.findDetail(memeId);
+    }
+
+    @Put('/:memeId/stickers')
+    @HttpCode(HttpStatus.OK)
+    async putStickers(@Body('stickers') stickers: Sticker[], @Param('memeId') memeId: string) {
+        return await this.memeService.putStickers(memeId, stickers);
     }
 
     private uploadImg = (img: Express.MulterS3.File): string => {
