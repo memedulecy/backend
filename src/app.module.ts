@@ -13,12 +13,12 @@ import { EnvModule } from './env/env.module';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DBConfigProvider } from 'DATABASE/dbConfig.provider';
-import { FileModule } from './file/file.module';
 import { MemeModule } from './meme/meme.module';
 import { EventModule } from './event/event.module';
+import { UserModule } from './user/user.module';
 
 @Module({
-    imports: [EnvModule, TypeOrmModule.forRoot(new DBConfigProvider().createTypeOrmOptions()), FileModule, MemeModule, EventModule],
+    imports: [EnvModule, TypeOrmModule.forRoot(new DBConfigProvider().createTypeOrmOptions()), MemeModule, EventModule, UserModule],
     controllers: [AppController],
     providers: [
         AppService,
