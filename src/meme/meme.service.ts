@@ -6,13 +6,21 @@ import { ErrCode } from 'EXCEPTION/errCode';
 import { ErrMsg } from 'EXCEPTION/errMsg';
 import { FindOptions } from 'typeorm';
 import { before30minutes } from 'COMMON/const/time.const';
+import { UserModel } from 'SRC/user/entity/user.model';
 
 @Injectable()
 export class MemeService {
     constructor(private readonly memeRepository: MemeRepository) {}
 
-    public create = async (imgUrl: string, message: string, creator: string): Promise<MemeModel> => {
-        const newMeme: Partial<MemeModel> = { imgUrl, message, creator, updater: creator };
+    public create = async (imgUrl: string, message: string, creator: UserModel): Promise<MemeModel> => {
+        const newMeme: Partial<MemeModel> = {
+            imgUrl,
+            message,
+            nickname: creator.nickname,
+            profileImg: creator.profileImg,
+            creator: creator.userId.toString(),
+            updater: creator.userId.toString(),
+        };
         return await this.memeRepository.create(newMeme);
     };
 
