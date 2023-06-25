@@ -46,17 +46,27 @@ export class EventsGateway {
         const VALUE_IDX = 1;
         await Promise.all(
             Array.from(socketMap).map(async targetData => {
+                const userMap = new Map();
                 const socketId = targetData[0];
                 const [long1, lat1] = targetData[VALUE_IDX].location;
                 const userIds = Array.from(socketMap)
                     .filter(socketData => {
-                        if (!socketData[VALUE_IDX].userId || targetData[VALUE_IDX].userId === socketData[VALUE_IDX].userId) return false;
+                        if (!socketData[VALUE_IDX].userId) return false;
                         const [long2, lat2] = socketData[VALUE_IDX].location;
-                        return getDistance(lat1, long1, lat2, long2) <= 50;
+                        const distance = getDistance(lat1, long1, lat2, long2);
+                        if (distance <= 50) {
+                            userMap.set(socketData[VALUE_IDX].userId, distance);
+                            return true;
+                        } else {
+                            return false;
+                        }
                     })
                     .map(v => v[VALUE_IDX].userId);
                 const memes = await this.memeService.findByUserIds(userIds);
-                this.server.to(socketId).emit(EventType.SEND_MEMES, memes);
+                this.server.to(socketId).emit(
+                    EventType.SEND_MEMES,
+                    memes.map(meme => ({ ...meme, distance: 1000 * userMap.get(meme.creator) })),
+                );
             }),
         );
     };
