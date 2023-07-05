@@ -13,7 +13,7 @@ async function bootstrap() {
     });
     app.useWebSocketAdapter(new IoAdapter(app));
     const envService = new EnvService();
-    const port = +envService.get<string>(Env.PORT) || 3000;
+    const port = +envService.get<string>(Env.PORT) || 8000;
     await app.listen(port);
     console.log(`listening on port ${port}`);
 }
