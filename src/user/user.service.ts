@@ -24,6 +24,7 @@ export class UserService {
         // 사용자 찾고 있으면 token 발행, 없으면 create하고 token 발생
         const user = await this.createIfNeed(email, nickname);
         const token = sign({ userId: user.userId.toString() }, this.envService.get<string>(Env.JWT_KEY));
+
         return { token };
     };
 

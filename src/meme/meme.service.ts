@@ -22,6 +22,7 @@ export class MemeService {
             creator: creator.userId.toString(),
             updater: creator.userId.toString(),
         };
+
         return await this.memeRepository.create(newMeme);
     };
 
