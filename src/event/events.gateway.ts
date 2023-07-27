@@ -8,7 +8,7 @@ import getDistance from 'gps-distance';
 import { socketMap } from 'COMMON/const/socketMap.const';
 import { verify } from 'jsonwebtoken';
 
-@WebSocketGateway(8080, { transports: ['websocket'], cors: true })
+@WebSocketGateway({ transports: ['websocket'], cors: true })
 export class EventsGateway {
     private logger = new Logger('Gateway');
     @WebSocketServer()
