@@ -58,7 +58,7 @@ export class UserService {
             code,
         };
         const params = new URLSearchParams(config);
-        const url = baseUrl + '?' + params;
+        const url = decodeURIComponent(baseUrl + '?' + params);
         const tokenRequest = await axios.post(url, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
