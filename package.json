@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.359.0",
+        "@fxts/core": "^0.18.0",
         "@nestjs/axios": "^3.0.0",
         "@nestjs/common": "^9.0.0",
         "@nestjs/config": "^2.3.4",

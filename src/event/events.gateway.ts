@@ -7,79 +7,84 @@ import { MemeService } from 'MEME/meme.service';
 import getDistance from 'gps-distance';
 import { socketMap } from 'COMMON/const/socketMap.const';
 import { verify } from 'jsonwebtoken';
+import { pipe, map, toArray, filter, each } from '@fxts/core';
 
 @WebSocketGateway({ transports: ['websocket'], cors: true })
 export class EventsGateway {
-    private logger = new Logger('Gateway');
-    @WebSocketServer()
-    server: Server;
+  private logger = new Logger('Gateway');
+  @WebSocketServer()
+  server: Server;
 
-    constructor(private readonly memeService: MemeService) {}
+  constructor(private readonly memeService: MemeService) {}
 
-    handleConnection(@ConnectedSocket() socket: Socket) {
-        this.logger.log(`💛 ${socket.id} 소켓 연결 💛`);
+  handleConnection(@ConnectedSocket() socket: Socket) {
+    this.logger.log(`💛 ${socket.id} 소켓 연결 💛`);
+  }
+
+  handleDisconnect(@ConnectedSocket() socket: Socket) {
+    socketMap.delete(socket.id);
+    this.logger.log(`💛 ${socket.id} 소켓 연결 해제 💛`);
+  }
+
+  @SubscribeMessage(EventType.SEND_GPS)
+  async handleGPSMessage(@ConnectedSocket() socket: Socket, @MessageBody() gps: GpsBody) {
+    const data: GpsData = { location: [gps.long, gps.lat] };
+
+    if (gps.token) {
+      const decoded: { userId: string } = verify(gps.token, process.env.JWT_KEY);
+      data.userId = decoded.userId;
     }
 
-    handleDisconnect(@ConnectedSocket() socket: Socket) {
-        socketMap.delete(socket.id);
-        this.logger.log(`💛 ${socket.id} 소켓 연결 해제 💛`);
-    }
+    this.logger.log(`💜 ${socket.id} gps 정보 전송 [ lat: ${gps.lat} / long: ${gps.long} ] 💜`);
+    socketMap.set(socket.id, data);
 
-    @SubscribeMessage(EventType.SEND_GPS)
-    async handleGPSMessage(@ConnectedSocket() socket: Socket, @MessageBody() gps: GpsBody) {
-        const data: GpsData = { location: [gps.long, gps.lat] };
+    await this.resendMemes();
+  }
 
-        if (gps.token) {
-            const decoded: { userId: string } = verify(gps.token, process.env.JWT_KEY);
-            data.userId = decoded.userId;
-        }
+  @SubscribeMessage(EventType.CREATE_MEME)
+  async handleMemeMessage() {
+    await this.resendMemes();
+  }
 
-        this.logger.log(`💜 ${socket.id} gps 정보 전송 [ lat: ${gps.lat} / long: ${gps.long} ] 💜`);
-        socketMap.set(socket.id, data);
+  private resendMemes = async () => {
+    const sendMemesTo = async targetSocket => {
+      const [socketId, { location: targetLocation }] = targetSocket;
 
-        await this.resendMemes();
-    }
+      const usersInDistance = Array.from(socketMap)
+        .filter(([_, { userId }]) => userId)
+        .filter(([_, { location }]) => {
+          const [long1, lat1] = targetLocation;
+          const [long2, lat2] = location;
+          const distance = getDistance(lat1, long1, lat2, long2);
+          const isInDistance = distance <= 50;
 
-    @SubscribeMessage(EventType.CREATE_MEME)
-    async handleMemeMessage() {
-        await this.resendMemes();
-    }
+          return isInDistance;
+        });
 
-    private resendMemes = async () => {
-        const VALUE_IDX = 1;
+      const distanceMap = new Map();
+      pipe(
+        usersInDistance,
+        each(([_, { userId, location }]) => {
+          const [long1, lat1] = targetLocation;
+          const [long2, lat2] = location;
+          const distance = getDistance(lat1, long1, lat2, long2) as GpsData;
 
-        await Promise.all(
-            Array.from(socketMap).map(async targetData => {
-                const userMap = new Map();
-                const socketId = targetData[0];
+          distanceMap.set(userId, distance);
+        }),
+      );
 
-                const userIds = Array.from(socketMap)
-                    .filter(socketData => {
-                        const { userId, location }: GpsData = socketData[VALUE_IDX];
+      const memes = await pipe(
+        usersInDistance,
+        map(([_, { userId }]) => userId),
+        toArray,
+        this.memeService.findByUserIds,
+        map(meme => ({ ...meme, distance: 1000 * distanceMap.get(meme.creator) })),
+        toArray,
+      );
 
-                        if (!userId) return false;
-
-                        const [long1, lat1] = targetData[VALUE_IDX].location;
-                        const [long2, lat2] = location;
-                        const distance = getDistance(lat1, long1, lat2, long2);
-                        const isInDistance = distance <= 50;
-
-                        if (isInDistance) {
-                            userMap.set(userId, distance);
-                            return true;
-                        }
-
-                        return false;
-                    })
-                    .map(([socketId, gpsData]: [string, GpsData]) => gpsData.userId);
-
-                const memes = await this.memeService.findByUserIds(userIds);
-
-                this.server.to(socketId).emit(
-                    EventType.SEND_MEMES,
-                    memes.map(meme => ({ ...meme, distance: 1000 * userMap.get(meme.creator) })),
-                );
-            }),
-        );
+      this.server.to(socketId).emit(EventType.SEND_MEMES, memes);
     };
+
+    pipe(socketMap, each(sendMemesTo));
+  };
 }
