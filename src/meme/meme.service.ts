@@ -11,36 +11,40 @@ import { Sticker } from './dataTypes/interface/sticker.interface';
 
 @Injectable()
 export class MemeService {
-    constructor(private readonly memeRepository: MemeRepository) {}
+  constructor(private readonly memeRepository: MemeRepository) {}
 
-    public create = async (imgUrl: string, message: string, creator: UserModel): Promise<MemeModel> => {
-        const newMeme: Partial<MemeModel> = {
-            imgUrl,
-            message,
-            nickname: creator.nickname,
-            profileImg: creator.profileImg,
-            creator: creator.userId.toString(),
-            updater: creator.userId.toString(),
-        };
-
-        return await this.memeRepository.create(newMeme);
+  public create = async (imgUrl: string, message: string, creator: UserModel): Promise<MemeModel> => {
+    const newMeme: Partial<MemeModel> = {
+      imgUrl,
+      message,
+      nickname: creator.nickname,
+      profileImg: creator.profileImg,
+      creator: creator.userId.toString(),
+      updater: creator.userId.toString(),
     };
 
-    public findDetail = async (memeId: string): Promise<MemeModel> => {
-        const meme = await this.memeRepository.findOneById(memeId);
-        if (!meme) throw new IntegrateException(ErrCode.NOT_FOUND_MEME, ErrMsg.NOT_FOUND_MEME, HttpStatus.NOT_FOUND);
-        if (!meme.imgUrl) meme.imgUrl = null;
-        if (!meme.message) meme.message = null;
-        return meme;
-    };
+    return await this.memeRepository.create(newMeme);
+  };
 
-    public findByUserIds = async (userIds: string[]): Promise<MemeModel[]> => {
-        const filter = { creator: { $in: userIds }, createdTs: { $gt: before30minutes } } as FindOptions<MemeModel>;
-        return await this.memeRepository.findByFilter(filter);
-    };
+  public findDetail = async (memeId: string): Promise<MemeModel> => {
+    const meme = await this.memeRepository.findOneById(memeId);
+    if (!meme) throw new IntegrateException(ErrCode.NOT_FOUND_MEME, ErrMsg.NOT_FOUND_MEME, HttpStatus.NOT_FOUND);
+    if (!meme.imgUrl) meme.imgUrl = null;
+    if (!meme.message) meme.message = null;
+    return meme;
+  };
 
-    public putStickers = async (memeId: string, stickers: Sticker[]) => {
-        const meme = await this.findDetail(memeId);
-        return await this.memeRepository.putStickers(meme, stickers);
-    };
+  public findByUserIds = async (userIds: string[], time: { gt: number; lt: number }): Promise<MemeModel[]> => {
+    const filter = {
+      creator: { $in: userIds },
+      createdTs: { $gt: time.gt, $lt: time.lt },
+    } as FindOptions<MemeModel>;
+
+    return await this.memeRepository.findByFilter(filter);
+  };
+
+  public putStickers = async (memeId: string, stickers: Sticker[]) => {
+    const meme = await this.findDetail(memeId);
+    return await this.memeRepository.putStickers(meme, stickers);
+  };
 }

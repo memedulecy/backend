@@ -33,6 +33,7 @@
         "axios": "^1.4.0",
         "class-transformer": "^0.5.1",
         "class-validator": "^0.14.0",
+        "date-fns": "^2.30.0",
         "gps-distance": "^0.0.4",
         "jsonwebtoken": "^9.0.0",
         "mongodb": "^5.6.0",

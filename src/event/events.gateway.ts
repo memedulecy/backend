@@ -1,13 +1,16 @@
 import { Logger } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
-import { EventType } from './datatypes/type/event.type';
-import { GpsBody, GpsData } from './datatypes/interface/gps.interface';
-import { MemeService } from 'MEME/meme.service';
 import getDistance from 'gps-distance';
-import { socketMap } from 'COMMON/const/socketMap.const';
 import { verify } from 'jsonwebtoken';
-import { pipe, map, toArray, filter, each } from '@fxts/core';
+import { pipe, map, toArray, each, curry } from '@fxts/core';
+
+import { GpsBody, GpsData } from './datatypes/interface/gps.interface';
+import { EventType } from './datatypes/type/event.type';
+import { generateTimespan } from 'COMMON/const/time.const';
+import { socketMap } from 'COMMON/const/socketMap.const';
+import { MemeService } from 'MEME/meme.service';
+import { MemeModel } from 'MEME/entity/meme.model';
 
 @WebSocketGateway({ transports: ['websocket'], cors: true })
 export class EventsGateway {
@@ -73,16 +76,25 @@ export class EventsGateway {
         }),
       );
 
-      const memes = await pipe(
+      const findMemes = await pipe(
         usersInDistance,
         map(([_, { userId }]) => userId),
         toArray,
-        this.memeService.findByUserIds,
-        map(meme => ({ ...meme, distance: 1000 * distanceMap.get(meme.creator) })),
-        toArray,
+        curry(this.memeService.findByUserIds),
       );
 
-      this.server.to(socketId).emit(EventType.SEND_MEMES, memes);
+      const findMemesWithTimespan = async (timespan: { lt: number; gt: number }) => await findMemes(timespan);
+
+      const timespans = await generateTimespan();
+
+      const memes = await Promise.all(timespans.map(async timespan => await findMemesWithTimespan(timespan)));
+
+      const mapDistance = (meme: MemeModel) => ({ ...meme, distance: 1000 * distanceMap.get(meme.creator) });
+
+      this.server.to(socketId).emit(
+        EventType.SEND_MEMES,
+        memes.map((el: Array<MemeModel>) => el.map(mapDistance)),
+      );
     };
 
     pipe(socketMap, each(sendMemesTo));
