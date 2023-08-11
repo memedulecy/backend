@@ -34,13 +34,13 @@ export class MemeService {
     return meme;
   };
 
-  public findByUserIds = async (userIds: string[], time: { gt: number; lt: number }): Promise<MemeModel[]> => {
+  public findByUserIds = async (userIds: string[], time: { gt: number; lt: number }, limit?: number): Promise<MemeModel[]> => {
     const filter = {
       creator: { $in: userIds },
       createdTs: { $gt: time.gt, $lt: time.lt },
     } as FindOptions<MemeModel>;
 
-    return await this.memeRepository.findByFilter(filter);
+    return await this.memeRepository.findByFilter(filter, limit);
   };
 
   public putStickers = async (memeId: string, stickers: Sticker[]) => {
