@@ -16,7 +16,7 @@ export class MemeRepository {
     return await this.memeRepository.findOne({ where: { _id: new ObjectId(memeId) } });
   };
 
-  public findByFilter = async (filter: FindOptions<MemeModel>, limit: number) => {
+  public findByFilter = async (filter: FindOptions<MemeModel>, limit?: number) => {
     if (!!limit) await this.memeRepository.find({ where: filter, order: { createdTs: 'DESC' }, take: limit });
 
     return await this.memeRepository.find({ where: filter, order: { createdTs: 'DESC' } });
