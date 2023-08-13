@@ -1,9 +1,15 @@
 import { Logger } from '@nestjs/common';
-import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  ConnectedSocket,
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import getDistance from 'gps-distance';
 import { verify } from 'jsonwebtoken';
-import { pipe, map, toArray, each, curry } from '@fxts/core';
+import { pipe, map, toArray, each, curry, filter } from '@fxts/core';
 
 import { GpsBody, GpsData } from './datatypes/interface/gps.interface';
 import { EventType } from './datatypes/type/event.type';
@@ -30,15 +36,23 @@ export class EventsGateway {
   }
 
   @SubscribeMessage(EventType.SEND_GPS)
-  async handleGPSMessage(@ConnectedSocket() socket: Socket, @MessageBody() gps: GpsBody) {
+  async handleGPSMessage(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() gps: GpsBody,
+  ) {
     const data: GpsData = { location: [gps.long, gps.lat] };
 
     if (gps.token) {
-      const decoded: { userId: string } = verify(gps.token, process.env.JWT_KEY);
+      const decoded: { userId: string } = verify(
+        gps.token,
+        process.env.JWT_KEY,
+      );
       data.userId = decoded.userId;
     }
 
-    this.logger.log(`💜 ${socket.id} gps 정보 전송 [ lat: ${gps.lat} / long: ${gps.long} ] 💜`);
+    this.logger.log(
+      `💜 ${socket.id} gps 정보 전송 [ lat: ${gps.lat} / long: ${gps.long} ] 💜`,
+    );
     socketMap.set(socket.id, data);
 
     await this.resendMemes();
@@ -50,53 +64,105 @@ export class EventsGateway {
   }
 
   private resendMemes = async () => {
-    const sendMemesTo = async targetSocket => {
-      const [socketId, { location: targetLocation }] = targetSocket;
+    interface User {
+      location: Array<number>;
+      userId: string;
+      socketId: string;
+    }
 
-      const usersInDistance = Array.from(socketMap)
-        .filter(([_, { userId }]) => userId)
-        .filter(([_, { location }]) => {
-          const [long1, lat1] = targetLocation;
-          const [long2, lat2] = location;
-          const distance = getDistance(lat1, long1, lat2, long2);
-          const isInDistance = distance <= 50;
+    type Meme = Partial<MemeModel>;
+    type Memes = Array<Array<Meme>>;
+    type MemeWithDistance = Meme & { distance: number };
 
-          return isInDistance;
-        });
+    const users = (await pipe(
+      socketMap,
+      map(([socketId, userInfo]) => ({ ...userInfo, socketId })),
+      filter(({ userId }) => userId),
+      toArray,
+    )) as Array<User>;
 
-      const distanceMap = new Map();
+    const filterUsersByDistance = curry((users: Array<User>, user: User) => {
+      return users.filter(({ location }) => {
+        const [long1, lat1] = user.location;
+        const [long2, lat2] = location;
+        const distance = getDistance(lat1, long1, lat2, long2);
+        const isInDistance = distance <= 50;
+
+        return isInDistance;
+      });
+    });
+
+    const getMemes = async (users: Array<User>): Promise<Memes> => {
+      const findMemes = await pipe(
+        users,
+        map(({ userId }) => userId),
+        toArray,
+        curry(this.memeService.findByUserIds),
+      );
+
+      const findMemesWithTimespan = async (
+        timespan: { lt: number; gt: number },
+        limit: number,
+      ) => await findMemes(timespan, limit);
+
+      const timespans = await generateTimespan();
+
+      return await Promise.all(
+        timespans.map(
+          async timespan => await findMemesWithTimespan(timespan, 5),
+        ),
+      );
+    };
+
+    const createDistanceMap = (
+      users: Array<User>,
+      userLocation: Array<number>,
+    ) => {
+      const distanceMap = new Map<string, number>();
+
       pipe(
-        usersInDistance,
-        each(([_, { userId, location }]) => {
-          const [long1, lat1] = targetLocation;
+        users,
+        each(({ userId, location }) => {
+          const [long1, lat1] = userLocation;
           const [long2, lat2] = location;
-          const distance = getDistance(lat1, long1, lat2, long2) as GpsData;
+          const distance: number = getDistance(lat1, long1, lat2, long2);
 
           distanceMap.set(userId, distance);
         }),
       );
 
-      const findMemes = await pipe(
-        usersInDistance,
-        map(([_, { userId }]) => userId),
-        toArray,
-        curry(this.memeService.findByUserIds),
-      );
-
-      const findMemesWithTimespan = async (timespan: { lt: number; gt: number }, limit: number) => await findMemes(timespan, limit);
-
-      const timespans = await generateTimespan();
-
-      const memes = await Promise.all(timespans.map(async timespan => await findMemesWithTimespan(timespan, 5)));
-
-      const mapDistance = (meme: MemeModel) => ({ ...meme, distance: 1000 * distanceMap.get(meme.creator) });
-
-      this.server.to(socketId).emit(
-        EventType.SEND_MEMES,
-        memes.map((el: Array<MemeModel>) => el.map(mapDistance)),
-      );
+      return distanceMap;
     };
 
-    pipe(socketMap, each(sendMemesTo));
+    const mapDistance = curry(
+      (
+        distanceMap: Map<string, number>,
+        memes: Memes,
+      ): Array<Array<MemeWithDistance>> =>
+        memes.map((el: Array<Meme>) =>
+          el.map((meme: Meme) => ({
+            ...meme,
+            distance: 1000 * distanceMap.get(meme.creator),
+          })),
+        ),
+    );
+
+    const sendMemesTo = curry(
+      (socketId: string, memes: Array<Array<MemeWithDistance>>) => {
+        this.server.to(socketId).emit(EventType.SEND_MEMES, memes);
+      },
+    );
+
+    pipe(
+      users,
+      each(async user => {
+        const filteredUsers = filterUsersByDistance(users, user);
+        const memes = await getMemes(filteredUsers);
+        const distanceMap = createDistanceMap(filteredUsers, user.location);
+        const memesWithDistance = await mapDistance(distanceMap, memes);
+
+        sendMemesTo(user.socketId, memesWithDistance);
+      }),
+    );
   };
 }
