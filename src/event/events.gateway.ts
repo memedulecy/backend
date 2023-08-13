@@ -83,11 +83,11 @@ export class EventsGateway {
         curry(this.memeService.findByUserIds),
       );
 
-      const findMemesWithTimespan = async (timespan: { lt: number; gt: number }) => await findMemes(timespan);
+      const findMemesWithTimespan = async (timespan: { lt: number; gt: number }, limit: number) => await findMemes(timespan, limit);
 
       const timespans = await generateTimespan();
 
-      const memes = await Promise.all(timespans.map(async timespan => await findMemesWithTimespan(timespan)));
+      const memes = await Promise.all(timespans.map(async timespan => await findMemesWithTimespan(timespan, 5)));
 
       const mapDistance = (meme: MemeModel) => ({ ...meme, distance: 1000 * distanceMap.get(meme.creator) });
 
