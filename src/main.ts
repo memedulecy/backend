@@ -3,23 +3,34 @@ import { AppModule } from './app.module';
 import { EnvService } from 'ENV/env.service';
 import { Env } from 'ENV/dataTypes/types/env.type';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule, { cors: true });
 
-    app.enableCors({
-        origin: true,
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-        credentials: true,
-    });
+  // using swagger
+  const config = new DocumentBuilder()
+    .setTitle('Memedulecy API')
+    .setDescription('The memedulecy API description')
+    .setVersion('1.0')
+    .addTag('memes')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
 
-    app.useWebSocketAdapter(new IoAdapter(app));
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
 
-    const envService = new EnvService();
-    const port = +envService.get<string>(Env.PORT) || 8000;
-    await app.listen(port);
+  app.useWebSocketAdapter(new IoAdapter(app));
 
-    console.log(`listening on port ${port}`);
+  const envService = new EnvService();
+  const port = +envService.get<string>(Env.PORT) || 8000;
+  await app.listen(port);
+
+  console.log(`listening on port ${port}`);
 }
 
 bootstrap();
