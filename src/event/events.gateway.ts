@@ -101,7 +101,7 @@ export class EventsGateway {
       );
 
       const findMemesWithTimespan = async (
-        timespan: { lt: number; gt: number },
+        timespan: { lt: number; gte: number },
         limit: number,
       ) => await findMemes(timespan, limit);
 
