@@ -1,9 +1,8 @@
 import { getMinutes } from 'date-fns';
 import { pipe, take, toArray } from '@fxts/core';
 
-export const before30minutes = Date.now() - 30 * 60 * 1000;
-
-export const beforeMinutes = (minute: number) => Date.now() - minute * 60 * 1000;
+export const beforeMinutes = (minute: number) =>
+  Date.now() - minute * 60 * 1000;
 
 export const getClosestDeciminute = (minutes: number) => {
   return Math.floor(minutes / 10) * 10;
@@ -20,7 +19,7 @@ export const generateTimespan = async () => {
       while (true) {
         yield {
           lt: beforeMinutes(to),
-          gt: beforeMinutes(from),
+          gte: beforeMinutes(from),
         };
 
         to = from;
